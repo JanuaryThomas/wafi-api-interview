@@ -1,0 +1,180 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: 'wafiing API'
+Parameters:
+  AppCode:
+    Type: String
+  EnvironmentType:
+    Type: String
+  VPCName:
+    Type: String
+Globals:
+  Function:
+    Runtime: python3.8
+    Timeout: 840
+    MemorySize: 512
+    Tracing: Active
+
+Resources:
+  
+  LambdaRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: 
+              - lambda.amazonaws.com
+            Action:
+              - sts:AssumeRole
+      Description: AIM policy for Analytics Refresh 
+      Path: /
+      Policies:
+        - PolicyName: !Sub ${AppCode}-lambda-policy
+          PolicyDocument:
+            Version: 2012-10-17
+            Statement:
+              - Effect: Allow
+                Action:
+                  - dynamodb:GetItem
+                  - dynamodb:PutItem
+                  - dynamodb:DeleteItem
+                  - dynamodb:UpdateItem
+                  - dynamodb:Query
+                  - dynamodb:Scan
+                  - dynamodb:BatchGetItem
+                  - dynamodb:BatchWriteItem
+                Resource: 
+                  - !GetAtt wafiTable.Arn
+              - Effect: Allow
+                Action:
+                  - secretsmanager:GetSecretValue
+                Resource: '*'
+              - Effect: Allow
+                Action:
+                  - sns:Publish
+                Resource: '*'
+              - Effect: Allow
+                Action:
+                  - logs:*
+                Resource: '*'
+      RoleName: !Sub ${AppCode}-lambda-role
+      Tags:
+        - Key: kt:environment-type
+          Value: !Sub ${EnvironmentType}
+        - Key: kt:application
+          Value: !Sub ${AppCode}
+        - Key: kt:appversion
+          Value: V0.1
+
+  wafiTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      AttributeDefinitions:
+      - AttributeName: primaryKey
+        AttributeType: S
+      - AttributeName: secondaryKey
+        AttributeType: S
+      BillingMode: PAY_PER_REQUEST
+      KeySchema:
+      - AttributeName: primaryKey
+        KeyType: HASH
+      - AttributeName: secondaryKey
+        KeyType: RANGE
+      TableName: !Sub ${AppCode}-dynamo-database
+  
+  wafiApi:
+    Type: AWS::Serverless::Api
+    Properties:
+      Name: !Sub ${AppCode}-test-api
+      StageName:
+        Ref: EnvironmentType
+      Auth:
+        UsagePlan:
+          CreateUsagePlan: PER_API
+          UsagePlanName:
+            Fn::Sub: ${AppCode}-usagePlan
+        ApiKeyRequired: true
+      Cors:
+        AllowOrigin: "'*'"
+        AllowMethods: "'OPTIONS,HEAD,GET,PUT,POST'"
+        AllowHeaders: "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'"
+      Domain:
+        DomainName: wafi.intelecstz.com
+        CertificateArn: arn:aws:acm:us-east-1:706849440443:certificate/228887a4-8f9b-4087-8637-7042eb77bce6
+        EndpointConfiguration: EDGE
+        Route53:
+          HostedZoneId: Z0971314YPPKJRJEJELC
+
+  registerUser:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub ${AppCode}-GetCompany
+      CodeUri: api/register/
+      Handler: app.handler
+      Role: !GetAtt LambdaRole.Arn
+      Events:
+        GetCompany:
+          Type: Api
+          Properties:
+            Path: /user/register
+            Method: post
+            RestApiId: !Ref wafiApi
+  deposit:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub ${AppCode}-deposit
+      CodeUri: api/deposit/
+      Handler: app.handler
+      Role: !GetAtt LambdaRole.Arn
+      Events:
+        GetCompany:
+          Type: Api
+          Properties:
+            Path: /app/deposit
+            Method: put
+            RestApiId: !Ref wafiApi
+  transfer:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub ${AppCode}-transfer
+      CodeUri: api/transfer/
+      Handler: app.handler
+      Role: !GetAtt LambdaRole.Arn
+      Events:
+        GetCompany:
+          Type: Api
+          Properties:
+            Path: /app/transfer
+            Method: post
+            RestApiId: !Ref wafiApi
+  send:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub ${AppCode}-send
+      CodeUri: api/send/
+      Handler: app.handler
+      Role: !GetAtt LambdaRole.Arn
+      Events:
+        GetCompany:
+          Type: Api
+          Properties:
+            Path: /app/send
+            Method: post
+            RestApiId: !Ref wafiApi
+  balance:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub ${AppCode}-balance
+      CodeUri: api/balance/
+      Handler: app.handler
+      Role: !GetAtt LambdaRole.Arn
+      Events:
+        GetCompany:
+          Type: Api
+          Properties:
+            Path: /app/balance/{userId}/
+            Method: get
+            RestApiId: !Ref wafiApi

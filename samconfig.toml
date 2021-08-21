@@ -1,0 +1,10 @@
+version = 0.1
+[default]
+[default.deploy]
+[default.deploy.parameters]
+stack_name = "wafi-interview"
+s3_bucket = "aws-sam-cli-managed-default-samclisourcebucket-llawf5o8b7xo"
+s3_prefix = "wafi-interview"
+region = "eu-west-1"
+capabilities = "CAPABILITY_NAMED_IAM"
+parameter_overrides = "AppCode=\"wafi-interview\" EnvironmentType=\"dev\" VPCName=\"dev\""
