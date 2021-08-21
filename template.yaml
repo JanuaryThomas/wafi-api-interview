@@ -111,7 +111,7 @@ Resources:
   registerUser:
     Type: AWS::Serverless::Function
     Properties:
-      FunctionName: !Sub ${AppCode}-GetCompany
+      FunctionName: !Sub ${AppCode}-register
       CodeUri: api/register/
       Handler: app.handler
       Role: !GetAtt LambdaRole.Arn
@@ -126,7 +126,7 @@ Resources:
     Type: AWS::Serverless::Function
     Properties:
       FunctionName: !Sub ${AppCode}-deposit
-      CodeUri: api/deposit/
+      CodeUri: api/deposit-money/
       Handler: app.handler
       Role: !GetAtt LambdaRole.Arn
       Events:
@@ -175,6 +175,6 @@ Resources:
         GetCompany:
           Type: Api
           Properties:
-            Path: /app/balance/{userId}/
+            Path: /app/balance/{primaryKey}/{secondaryKey}/
             Method: get
             RestApiId: !Ref wafiApi

@@ -1,14 +1,8 @@
 import boto3
 import json
-from decimal import Decimal
 
 
 dynamodb = boto3.resource('dynamodb')
-class DecimalEncoder(json.JSONEncoder):
-    def default(self, o):
-        if isinstance(o, Decimal):
-            return str(o)
-        return super(DecimalEncoder, self).default(o)
 
 def handler(event, context):
     response = {"statusCode": 201, "body": "Data Added"}
@@ -20,15 +14,19 @@ def handler(event, context):
         response['body'] = 'You must pass provide body'
         return response
     try:
-        pathParameters = event["pathParameters"]
+        body = json.loads(event['body'])
         table = dynamodb.Table(table)
-        item = table.get_item(
+        table.update_item(
             Key={
-                "primaryKey": pathParameters['primaryKey'],
-                "secondaryKey": pathParameters['secondaryKey'],
-            }
+                "primaryKey": body['primaryKey'],
+                "secondaryKey": body['secondaryKey'],
+            },
+            ExpressionAttributeValues={
+                ":balance": int(body['balance'])
+            },
+            UpdateExpression="ADD balance :balance",
+            ReturnValues="UPDATED_NEW"
         )
-        response['body'] = json.dumps(item['Item'], cls=DecimalEncoder)
         return response
     except Exception as e:
         print(e)

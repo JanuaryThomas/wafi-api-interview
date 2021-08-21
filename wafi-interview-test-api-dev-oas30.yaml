@@ -1,0 +1,118 @@
+openapi: "3.0.1"
+info:
+  title: "wafi-interview-test-api"
+  version: "1.0"
+servers:
+- url: "https://wafi.intelecstz.com"
+paths:
+  /app/send:
+    post:
+      security:
+      - api_key: []
+    options:
+      responses:
+        "200":
+          description: "200 response"
+          headers:
+            Access-Control-Allow-Origin:
+              schema:
+                type: "string"
+            Access-Control-Allow-Methods:
+              schema:
+                type: "string"
+            Access-Control-Allow-Headers:
+              schema:
+                type: "string"
+          content: {}
+      security:
+      - api_key: []
+  /app/deposit:
+    put:
+      security:
+      - api_key: []
+    options:
+      responses:
+        "200":
+          description: "200 response"
+          headers:
+            Access-Control-Allow-Origin:
+              schema:
+                type: "string"
+            Access-Control-Allow-Methods:
+              schema:
+                type: "string"
+            Access-Control-Allow-Headers:
+              schema:
+                type: "string"
+          content: {}
+      security:
+      - api_key: []
+  /app/balance/{primaryKey}/{secondaryKey}:
+    get:
+      security:
+      - api_key: []
+    options:
+      responses:
+        "200":
+          description: "200 response"
+          headers:
+            Access-Control-Allow-Origin:
+              schema:
+                type: "string"
+            Access-Control-Allow-Methods:
+              schema:
+                type: "string"
+            Access-Control-Allow-Headers:
+              schema:
+                type: "string"
+          content: {}
+      security:
+      - api_key: []
+  /user/register:
+    post:
+      security:
+      - api_key: []
+    options:
+      responses:
+        "200":
+          description: "200 response"
+          headers:
+            Access-Control-Allow-Origin:
+              schema:
+                type: "string"
+            Access-Control-Allow-Methods:
+              schema:
+                type: "string"
+            Access-Control-Allow-Headers:
+              schema:
+                type: "string"
+          content: {}
+      security:
+      - api_key: []
+  /app/transfer:
+    post:
+      security:
+      - api_key: []
+    options:
+      responses:
+        "200":
+          description: "200 response"
+          headers:
+            Access-Control-Allow-Origin:
+              schema:
+                type: "string"
+            Access-Control-Allow-Methods:
+              schema:
+                type: "string"
+            Access-Control-Allow-Headers:
+              schema:
+                type: "string"
+          content: {}
+      security:
+      - api_key: []
+components:
+  securitySchemes:
+    api_key:
+      type: "apiKey"
+      name: "x-api-key"
+      in: "header"
